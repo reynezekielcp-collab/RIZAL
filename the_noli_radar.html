@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Noli Radar - Search Engine</title>
+    <!-- Tailwind CSS for modern styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        googleBlue: '#1a73e8',
+                        googleHover: '#174ea6',
+                        googleGray: '#f8f9fa',
+                        googleBorder: '#dadce0',
+                        googleText: '#202124',
+                        googleSecondary: '#5f6368',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Product+Sans:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .google-logo-font {
+            font-family: 'Product Sans', 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for SERP */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body class="bg-white text-googleText min-h-screen flex flex-col justify-between selection:bg-blue-100 selection:text-googleBlue">
+
+    <!-- HOMEPAGE VIEW -->
+    <div id="home-view" class="flex flex-col min-h-screen justify-between">
+        <!-- Top Navigation Bar -->
+        <header class="flex justify-between items-center px-6 py-4 text-sm text-googleSecondary">
+            <div class="flex items-center space-x-4">
+                <a href="#" class="hover:underline">About Rizal 2026</a>
+                <a href="#" class="hover:underline">Project Storefront</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" class="hover:underline hidden sm:block">Apps</a>
+                <button onclick="openModal('riddleModal')" class="bg-blue-600 text-white px-4 py-2 rounded-full font-medium shadow-sm hover:bg-blue-700 transition">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Fact-Check Tool
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Search Center -->
+        <main class="flex flex-col items-center justify-center px-4 -mt-16 flex-grow">
+            <!-- Animated Logo -->
+            <div class="text-center mb-8">
+                <h1 class="google-logo-font text-5xl sm:text-7xl tracking-tight font-normal select-none">
+                    <span class="text-blue-500">N</span><span class="text-red-500">o</span><span class="text-yellow-500">l</span><span class="text-blue-500">i</span> <span class="text-green-600">R</span><span class="text-red-500">a</span><span class="text-blue-500">d</span><span class="text-yellow-500">a</span><span class="text-green-600">r</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-googleSecondary mt-2 tracking-wide font-medium bg-blue-50 text-blue-700 py-1 px-3 rounded-full inline-block border border-blue-100">
+                    <i class="fa-solid fa-radar mr-1 animate-pulse"></i> Catching Fake News & Deepfakes with Jose Rizal's Ideals (2026 Edition)
+                </p>
+            </div>
+
+            <!-- Search Bar Form -->
+            <div class="w-full max-w-2xl relative">
+                <div id="search-bar-container" class="flex items-center border border-googleBorder hover:shadow-md focus-within:shadow-md rounded-full px-4 py-3 transition bg-white relative z-20">
+                    <i class="fa-solid fa-magnifying-glass text-googleSecondary mr-3 text-lg"></i>
+                    <input 
+                        type="text" 
+                        id="home-search-input"
+                        placeholder="Search for deepfakes, Rizal essays, or 2026 civic issues..." 
+                        class="w-full focus:outline-none text-base bg-transparent text-googleText"
+                        autocomplete="off"
+                        oninput="handleAutocomplete(event)"
+                        onkeydown="handleSearchKey(event)"
+                    >
+                    <div class="flex items-center space-x-3 text-googleSecondary pl-2">
+                        <button title="Search by Voice" class="hover:text-googleBlue transition"><i class="fa-solid fa-microphone text-lg"></i></button>
+                        <button title="Search by Image" class="hover:text-googleBlue transition"><i class="fa-solid fa-camera text-lg"></i></button>
+                    </div>
+                </div>
+
+                <!-- Autocomplete Dropdown -->
+                <div id="autocomplete-dropdown" class="hidden absolute top-full left-0 right-0 bg-white border border-googleBorder rounded-2xl mt-1 shadow-lg z-30 overflow-hidden py-2">
+                    <!-- Dynamically populated suggestions -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-3 mt-8">
+                <button onclick="triggerSearch()" class="bg-googleGray hover:bg-gray-100 border border-transparent hover:border-googleBorder text-googleText text-sm font-medium px-4 py-2.5 rounded-md transition shadow-xs">
+                    Noli Radar Search
+                </button>
+                <button onclick="feelingLucky()" class="bg-googleGray hover:bg-gray-100 border border-transparent hover:border-googleBorder text-googleText text-sm font-medium px-4 py-2.5 rounded-md transition shadow-xs">
+                    I'm Feeling Lucky (Fact-Check)
+                </button>
+            </div>
+
+            <!-- Quick Topic Pills -->
+            <div class="flex flex-wrap justify-center gap-2 mt-8 max-w-xl">
+                <span class="text-xs text-googleSecondary py-1">Trending Topics:</span>
+                <button onclick="quickSearch('The Philippines a Century Hence AI')" class="text-xs bg-gray-100 hover:bg-gray-200 text-googleSecondary px-3 py-1 rounded-full transition">#CenturyHence2026</button>
+                <button onclick="quickSearch('El Filibusterismo Deepfakes')" class="text-xs bg-gray-100 hover:bg-gray-200 text-googleSecondary px-3 py-1 rounded-full transition">#SimounGPT</button>
+                <button onclick="quickSearch('Noli Me Tangere Echo Chambers')" class="text-xs bg-gray-100 hover:bg-gray-200 text-googleSecondary px-3 py-1 rounded-full transition">#SocialApathy</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-googleGray text-googleSecondary text-xs border-t border-googleBorder">
+            <div class="px-6 py-3 border-b border-googleBorder flex justify-between items-center flex-wrap gap-2">
+                <span>Philippines • From your 2026 Digital Advocacy Project</span>
+                <span class="text-blue-600 font-medium">Created by Reyn Ezekiel Peña</span>
+            </div>
+            <div class="px-6 py-3 flex justify-between items-center flex-wrap gap-4">
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:underline">About</a>
+                    <a href="#" class="hover:underline">Advertising</a>
+                    <a href="#" class="hover:underline">Business</a>
+                    <a href="#" class="hover:underline">How Search works</a>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:underline">Privacy</a>
+                    <a href="#" class="hover:underline">Terms</a>
+                    <a href="#" class="hover:underline">Settings</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- SEARCH RESULTS PAGE (SERP) VIEW -->
+    <div id="serp-view" class="hidden flex flex-col min-h-screen justify-between">
+        <!-- SERP Header -->
+        <header class="border-b border-googleBorder sticky top-0 bg-white z-30 px-4 sm:px-8 py-3 flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center space-x-6">
+                <!-- Logo click to home -->
+                <h2 onclick="goHome()" class="google-logo-font text-2xl font-normal cursor-pointer tracking-tight">
+                    <span class="text-blue-500">N</span><span class="text-red-500">o</span><span class="text-yellow-500">l</span><span class="text-blue-500">i</span> <span class="text-green-600">R</span><span class="text-red-500">a</span><span class="text-blue-500">d</span><span class="text-yellow-500">a</span><span class="text-green-600">r</span>
+                </h2>
+                
+                <!-- Search input box in SERP -->
+                <div class="relative flex-grow max-w-xl hidden sm:block">
+                    <div class="flex items-center border border-googleBorder hover:shadow-md focus-within:shadow-md rounded-full px-4 py-2 bg-white">
+                        <input 
+                            type="text" 
+                            id="serp-search-input"
+                            class="w-full focus:outline-none text-sm bg-transparent text-googleText"
+                            onkeydown="handleSerpSearchKey(event)"
+                        >
+                        <div class="flex items-center space-x-2 text-blue-600 pl-2 cursor-pointer" onclick="executeSerpSearch()">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Tools -->
+            <div class="flex items-center space-x-4 text-googleSecondary">
+                <button onclick="openModal('riddleModal')" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-full font-medium hover:bg-blue-100 transition">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Fact-Checker
+                </button>
+                <i class="fa-solid fa-gear text-lg cursor-pointer hover:text-googleText"></i>
+                <i class="fa-solid fa-grip text-lg cursor-pointer hover:text-googleText"></i>
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                    RP
+                </div>
+            </div>
+        </header>
+
+        <!-- Sub-header Navigation Tabs -->
+        <div class="border-b border-googleBorder px-4 sm:px-44 flex space-x-8 text-sm text-googleSecondary bg-white overflow-x-auto">
+            <button onclick="filterTab('all')" id="tab-all" class="py-3 border-b-2 border-blue-600 text-blue-600 font-medium flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-magnifying-glass"></i> <span>All</span>
+            </button>
+            <button onclick="filterTab('news')" id="tab-news" class="py-3 border-b-2 border-transparent hover:text-googleText flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-newspaper"></i> <span>News & Essays</span>
+            </button>
+            <button onclick="filterTab('images')" id="tab-images" class="py-3 border-b-2 border-transparent hover:text-googleText flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-image"></i> <span>Images & Memes</span>
+            </button>
+            <button onclick="filterTab('tools')" id="tab-tools" class="py-3 border-b-2 border-transparent hover:text-googleText flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-toolbox"></i> <span>Fact-Check Tools</span>
+            </button>
+        </div>
+
+        <!-- SERP Body Content Area -->
+        <main class="flex-grow px-4 sm:px-44 py-4 flex flex-col lg:flex-row gap-8 justify-between">
+            <!-- Results List -->
+            <div class="w-full lg:w-7/12 flex-shrink-0">
+                <p id="search-stats" class="text-xs text-googleSecondary mb-4">About 1,840,000 search results (0.34 seconds)</p>
+
+                <!-- Dynamic Search Results Container -->
+                <div id="results-container" class="space-y-6">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-center my-10 space-x-2">
+                    <span class="text-xl font-bold text-blue-600 tracking-wider">N</span>
+                    <span class="text-xl font-bold text-red-500 tracking-wider">o</span>
+                    <span class="text-xl font-bold text-yellow-500 tracking-wider">l</span>
+                    <span class="text-xl font-bold text-blue-500 tracking-wider">i</span>
+                    <span class="text-xl font-bold text-green-600 tracking-wider">R</span>
+                    <span class="text-xl font-bold text-red-500 tracking-wider">a</span>
+                    <span class="text-xl font-bold text-blue-500 tracking-wider">d</span>
+                    <span class="text-xl font-bold text-yellow-500 tracking-wider">a</span>
+                    <span class="text-xl font-bold text-green-600 tracking-wider">r</span>
+                    <span class="text-xl font-bold text-blue-600 tracking-wider">...</span>
+                </div>
+            </div>
+
+            <!-- Knowledge Panel (Right Sidebar) -->
+            <div class="w-full lg:w-4/12">
+                <div class="border border-googleBorder rounded-2xl p-5 bg-white shadow-sm sticky top-24">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 id="kp-title" class="text-xl font-bold text-googleText">José Rizal (2026 Digital Edition)</h3>
+                            <p id="kp-subtitle" class="text-xs text-googleSecondary mt-0.5">National Hero & 19th-Century Infosec Pioneer</p>
+                        </div>
+                        <i class="fa-solid fa-share-nodes text-googleSecondary cursor-pointer hover:text-googleText"></i>
+                    </div>
+
+                    <div class="my-4 rounded-xl overflow-hidden border border-googleBorder bg-blue-50 h-48 flex items-center justify-center relative">
+                        <img id="kp-image" src="https://placehold.co/400x250/1a73e8/ffffff?text=José+Rizal+2026" alt="Rizal 2026" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
+                            AI Render 2026
+                        </div>
+                    </div>
+
+                    <p id="kp-description" class="text-sm text-googleText leading-relaxed">
+                        José Rizal (June 19, 1861 – December 30, 1896) was a Filipino nationalist, physician, and writer. In the 2026 <strong class="text-blue-600">Noli Radar</strong> framework, his essays such as *The Philippines a Century Hence* are reinterpreted as foundational guides against modern deepfakes, algorithmic echo chambers, and viral misinformation.
+                    </p>
+
+                    <div class="mt-4 pt-4 border-t border-googleBorder space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-googleSecondary font-medium">Key 2026 Theme:</span>
+                            <span class="text-googleText font-semibold">Epistemic Vigilance</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-googleSecondary font-medium">Rebranded Works:</span>
+                            <span class="text-googleText font-semibold">Noli, Fili, Century Hence</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-googleSecondary font-medium">Advocacy Goal:</span>
+                            <span class="text-googleText font-semibold">Combat AI Misinformation</span>
+                        </div>
+                    </div>
+
+                    <button onclick="openModal('riddleModal')" class="w-full mt-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-xl transition shadow-sm flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-shield-cat"></i>
+                        <span>Test Your Fact-Checking Skills</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-googleGray text-googleSecondary text-xs border-t border-googleBorder px-4 sm:px-44 py-4 flex justify-between items-center flex-wrap gap-4">
+            <div><span>© 2026 The Noli Radar Project • Designed for Academic Excellence</span></div>
+            <div class="flex space-x-6">
+                <a href="#" class="hover:underline">Privacy Policy</a>
+                <a href="#" class="hover:underline">Terms of Service</a>
+                <a href="#" class="hover:underline">Feedback</a>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- INTERACTIVE MODAL FOR DEEP DIVE / FACT CHECK -->
+    <div id="articleModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-googleBorder animate-in fade-in zoom-in duration-200">
+            <div class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-radar text-lg"></i>
+                    <h3 id="modal-title" class="font-bold text-lg">Noli Radar Deep Dive</h3>
+                </div>
+                <button onclick="closeModal('articleModal')" class="text-white hover:bg-blue-700 p-2 rounded-full transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6 max-h-[70vh] overflow-y-auto space-y-4 text-sm leading-relaxed text-googleText">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="bg-gray-50 px-6 py-3 border-t border-googleBorder flex justify-end space-x-3">
+                <button onclick="closeModal('articleModal')" class="bg-googleGray hover:bg-gray-200 text-googleText text-sm font-medium px-4 py-2 rounded-lg transition">
+                    Close
+                </button>
+                <button onclick="alertBox('Result copied to clipboard! Share this advocacy insight with your peers.')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                    Share Insight
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- INTERACTIVE FACT-CHECK SIMULATOR MODAL -->
+    <div id="riddleModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-googleBorder">
+            <div class="bg-green-600 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                    <h3 class="font-bold text-lg">2026 Fact-Check Simulator</h3>
+                </div>
+                <button onclick="closeModal('riddleModal')" class="text-white hover:bg-green-700 p-2 rounded-full transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs uppercase font-semibold text-green-600 tracking-wider">Test #1: Spot the Misinformation</p>
+                <p class="text-sm font-medium text-googleText">
+                    A viral social media post claims: <em>"Padre Damaso invented the internet in San Diego in 1888."</em> Based on your Noli Radar training and historical context, what is this?
+                </p>
+                
+                <div class="space-y-2 pt-2">
+                    <button onclick="checkAnswer(true)" class="w-full text-left p-3 rounded-xl border border-googleBorder hover:bg-green-50 hover:border-green-300 text-sm transition font-medium flex items-center justify-between group">
+                        <span>A) Historical Fact verified by friars</span>
+                        <i class="fa-regular fa-circle text-googleSecondary group-hover:text-green-600"></i>
+                    </button>
+                    <button onclick="checkAnswer(false)" class="w-full text-left p-3 rounded-xl border border-googleBorder hover:bg-green-50 hover:border-green-300 text-sm transition font-medium flex items-center justify-between group">
+                        <span>B) Satirical Deepfake / Misinformation typical of 2026 echo chambers</span>
+                        <i class="fa-regular fa-circle text-googleSecondary group-hover:text-green-600"></i>
+                    </button>
+                    <button onclick="checkAnswer(true)" class="w-full text-left p-3 rounded-xl border border-googleBorder hover:bg-green-50 hover:border-green-300 text-sm transition font-medium flex items-center justify-between group">
+                        <span>C) An excerpt from El Filibusterismo Chapter 40</span>
+                        <i class="fa-regular fa-circle text-googleSecondary group-hover:text-green-600"></i>
+                    </button>
+                </div>
+
+                <div id="riddle-feedback" class="hidden p-3 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs font-medium">
+                    <i class="fa-solid fa-circle-check mr-1"></i> Correct! Rizal's writings warn us against gullibility. In 2026, algorithmic misinformation mimics this absurd false narrative.
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 border-t border-googleBorder flex justify-end">
+                <button onclick="closeModal('riddleModal')" class="bg-googleGray hover:bg-gray-200 text-googleText text-sm font-medium px-4 py-2 rounded-lg transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CUSTOM NOTIFICATION BANNER (Replaces alert) -->
+    <div id="custom-alert" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl z-50 hidden transition transform translate-y-2">
+        <span id="alert-message">Notification message</span>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC & SEARCH DATA -->
+    <script>
+        // Database of mock search results related to Rizal & 2026 Misinformation
+        const searchDatabase = [
+            {
+                id: 1,
+                title: "The Philippines a Century Hence (2026 Annotated Edition) - Noli Radar",
+                url: "https://noliradar.ph/essays/century-hence-2026",
+                snippet: "How José Rizal's 1889 geopolitical forecast accurately predicted modern digital echo chambers, state-sponsored bot farms, and the battle for cognitive freedom among Gen Z students.",
+                type: "all",
+                modalTitle: "The Philippines a Century Hence: 2026 Analysis",
+                modalContent: `
+                    <h4 class='font-bold text-base text-blue-600'>Bridging 1889 to 2026</h4>
+                    <p>In <em>The Philippines a Century Hence</em>, Rizal examined what would happen if the Filipino people were enlightened or kept in ignorance. In 2026, our 'darkness' isn't just lack of formal education—it is algorithmic manipulation, deepfakes, and unchecked disinformation.</p>
+                    <h5 class='font-semibold text-googleText pt-2'>How The Noli Radar Applies This:</h5>
+                    <ul class='list-disc pl-5 space-y-1'>
+                        <li><strong>Epistemic Vigilance:</strong> Questioning viral headlines just as Elias questioned institutional corruption.</li>
+                        <li><strong>Active Digital Citizenship:</strong> Moving beyond silent scrolling (civic apathy) to active debunking.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 2,
+                title: "SimounGPT: What Would Rizal's Revolutionary Character Say About AI Deepfakes?",
+                url: "https://noliradar.ph/blog/simoungpt-ai-ethics",
+                snippet: "An investigative piece exploring how Simoun from El Filibusterismo would utilize or combat generative AI models used to sway public opinion and manipulate student elections.",
+                type: "news",
+                modalTitle: "SimounGPT & Algorithmic Vengeance",
+                modalContent: `
+                    <h4 class='font-bold text-base text-blue-600'>If Simoun Had Wi-Fi</h4>
+                    <p>Simoun engineered a revolution through hidden wealth and smuggled explosives. In 2026, the explosives are viral deepfake videos designed to ignite social unrest and division.</p>
+                    <p class='pt-2'>The Noli Radar challenges students to recognize that true reform doesn't come from blind outrage fueled by fake news, but from critical discernment and structural education.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Interactive Fact-Check Tool: Spotting Misinformation Like Crisóstomo Ibarra",
+                url: "https://noliradar.ph/tools/fact-checker",
+                snippet: "Use our interactive verification simulator to test news headlines against historical facts and logical fallacies. Built for college students and digital advocates.",
+                type: "tools",
+                modalTitle: "The Ibarra Fact-Checking Protocol",
+                modalContent: `
+                    <h4 class='font-bold text-base text-blue-600'>The 3-Step Noli Radar Verification</h4>
+                    <ol class='list-decimal pl-5 space-y-2'>
+                        <li><strong>Source Provenance:</strong> Who uploaded this? Is it an anonymous troll farm or a verifiable institution?</li>
+                        <li><strong>Emotional Trigger Check:</strong> Does the post make you excessively angry or fearful instantly? (A classic sign of algorithmic rage-bait).</li>
+                        <li><strong>Cross-Reference:</strong> Check trusted primary sources before clicking 'Share'.</li>
+                    </ol>
+                `
+            },
+            {
+                id: 4,
+                title: "Noli Me Tangere & The Echo Chamber: Why College Students Fall for Fake News",
+                url: "https://noliradar.ph/research/echo-chambers",
+                snippet: "A sociological study linking the social blindness in San Diego to modern social media bubble isolation. Discover why breaking your bubble is the ultimate act of modern nationalism.",
+                type: "all",
+                modalTitle: "Social Blindness in the Digital Age",
+                modalContent: `
+                    <h4 class='font-bold text-base text-blue-600'>The Modern San Diego Bubble</h4>
+                    <p>Just as the townspeople of San Diego in <em>Noli Me Tangere</em> were blinded by religious dogmatism and social hierarchy, today's students are often trapped in tailored algorithmic feeds that reinforce biases.</p>
+                    <p class='pt-2'>Breaking the bubble requires conscious effort, media literacy, and adopting Rizal's relentless curiosity.</p>
+                `
+            },
+            {
+                id: 5,
+                title: "Gallery: Rizal's Writings Reimagined as 2026 Infographics & Memes",
+                url: "https://noliradar.ph/images/gallery",
+                snippet: "Browse viral social media graphics designed by student advocates to make Jose Rizal's ideals relatable, engaging, and culturally resonant for Gen Z.",
+                type: "images",
+                modalTitle: "Visual Advocacy & Rebranding Rizal",
+                modalContent: `
+                    <h4 class='font-bold text-base text-blue-600'>Visualizing History for 2026</h4>
+                    <p>Traditional views often portray Rizal as a dusty portrait on a classroom wall. Our project recasts him as a sharp, witty digital satirist.</p>
+                    <div class='grid grid-cols-2 gap-2 mt-3'>
+                        <img src='https://placehold.co/300x200/1a73e8/ffffff?text=Meme+1:+Elias+on+Fake+News' class='rounded-lg w-full object-cover'>
+                        <img src='https://placehold.co/300x200/137333/ffffff?text=Meme+2:+Crisostomo+Offline' class='rounded-lg w-full object-cover'>
+                    </div>
+                `
+            }
+        ];
+
+        let currentFilter = 'all';
+        let currentQuery = '';
+
+        // Handle Autocomplete Suggestions
+        function handleAutocomplete(event) {
+            const val = event.target.value.toLowerCase();
+            const dropdown = document.getElementById('autocomplete-dropdown');
+            
+            if (!val.trim()) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const matches = searchDatabase.filter(item => 
+                item.title.toLowerCase().includes(val) || item.snippet.toLowerCase().includes(val)
+            ).slice(0, 4);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = `<div class='px-4 py-2 text-xs text-googleSecondary'>No quick suggestions found. Press Enter to search.</div>`;
+            } else {
+                dropdown.innerHTML = matches.map(m => `
+                    <div onclick="selectSuggestion('${m.title.replace(/'/g, "\\'")}')" class='px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm flex items-center space-x-3 text-googleText'>
+                        <i class="fa-solid fa-magnifying-glass text-xs text-googleSecondary"></i>
+                        <span class="truncate">${m.title}</span>
+                    </div>
+                `).join('');
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectSuggestion(title) {
+            document.getElementById('home-search-input').value = title;
+            document.getElementById('autocomplete-dropdown').classList.add('hidden');
+            performSearch(title);
+        }
+
+        function handleSearchKey(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('home-search-input').value;
+                document.getElementById('autocomplete-dropdown').classList.add('hidden');
+                performSearch(query);
+            }
+        }
+
+        function handleSerpSearchKey(event) {
+            if (event.key === 'Enter') {
+                executeSerpSearch();
+            }
+        }
+
+        function triggerSearch() {
+            const query = document.getElementById('home-search-input').value || 'Rizal 2026 misinformation';
+            performSearch(query);
+        }
+
+        function quickSearch(queryText) {
+            document.getElementById('home-search-input').value = queryText;
+            performSearch(queryText);
+        }
+
+        function feelingLucky() {
+            openModal('riddleModal');
+        }
+
+        function performSearch(query) {
+            currentQuery = query;
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('serp-view').classList.remove('hidden');
+            document.getElementById('serp-search-input').value = query;
+            renderResults();
+            window.scrollTo(0, 0);
+        }
+
+        function executeSerpSearch() {
+            const query = document.getElementById('serp-search-input').value;
+            currentQuery = query;
+            renderResults();
+        }
+
+        function filterTab(tabName) {
+            currentFilter = tabName;
+            // Update active tab styles
+            ['all', 'news', 'images', 'tools'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    btn.className = "py-3 border-b-2 border-blue-600 text-blue-600 font-medium flex items-center space-x-2 whitespace-nowrap";
+                } else {
+                    btn.className = "py-3 border-b-2 border-transparent hover:text-googleText flex items-center space-x-2 whitespace-nowrap";
+                }
+            });
+            renderResults();
+        }
+
+        function renderResults() {
+            const container = document.getElementById('results-container');
+            let filtered = searchDatabase;
+
+            if (currentFilter === 'news') {
+                filtered = searchDatabase.filter(item => item.type === 'news' || item.type === 'all');
+            } else if (currentFilter === 'images') {
+                filtered = searchDatabase.filter(item => item.type === 'images');
+            } else if (currentFilter === 'tools') {
+                filtered = searchDatabase.filter(item => item.type === 'tools');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="py-10 text-center text-googleSecondary">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-yellow-500"></i>
+                        <p class="text-base font-semibold text-googleText">No exact matches in the Noli Radar archive for "${currentQuery}".</p>
+                        <p class="text-xs mt-1">Try searching for "century hence", "deepfakes", or "echo chambers".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => `
+                <div class="group cursor-pointer" onclick="openArticleModal('${item.modalTitle.replace(/'/g, "\\'")}', '${escapeHtml(item.modalContent)}')">
+                    <div class="text-xs text-googleSecondary mb-1 flex items-center space-x-2">
+                        <span class="bg-gray-100 px-2 py-0.5 rounded text-[10px] uppercase font-semibold text-blue-700">Noli Radar Verified</span>
+                        <span class="truncate">${item.url}</span>
+                        <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                    </div>
+                    <h4 class="text-xl text-blue-800 group-hover:underline font-normal mb-1">
+                        ${item.title}
+                    </h4>
+                    <p class="text-sm text-googleSecondary leading-relaxed">
+                        ${item.snippet}
+                    </p>
+                </div>
+            `).join('');
+
+            document.getElementById('search-stats').innerText = `About ${filtered.length * 412}00 search results (0.28 seconds)`;
+        }
+
+        function goHome() {
+            document.getElementById('serp-view').classList.add('hidden');
+            document.getElementById('home-view').classList.remove('hidden');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function openArticleModal(title, content) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-content').innerHTML = content;
+            openModal('articleModal');
+        }
+
+        function checkAnswer(isCorrect) {
+            const feedback = document.getElementById('riddle-feedback');
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Correct! This is a satirical deepfake scenario. Rizal's writings teach us to interrogate questionable claims instead of spreading them blindly.`;
+            } else {
+                feedback.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i> Not quite! That option is part of a misinformation trap. Always check primary sources with the Noli Radar protocol!`;
+            }
+        }
+
+        function alertBox(msg) {
+            const alertEl = document.getElementById('custom-alert');
+            document.getElementById('alert-message').innerText = msg;
+            alertEl.classList.remove('hidden');
+            setTimeout(() => {
+                alertEl.classList.add('hidden');
+            }, 3500);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/"/g, '&quot;');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('autocomplete-dropdown');
+            const searchInput = document.getElementById('home-search-input');
+            if (dropdown && searchInput && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
